@@ -1,0 +1,71 @@
+%PDF-1.4
+1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj
+2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj
+3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >> endobj
+4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj
+5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> endobj
+6 0 obj << /Length 3233 >> stream
+0.180 0.640 0.400 rg 0 770 595 72 re f
+1.000 1.000 1.000 rg 44 790 30 30 re f
+BT /F2 18 Tf 0.180 0.640 0.400 rg 1 0 0 1 52 799 Tm (V) Tj ET
+BT /F2 15 Tf 1.000 1.000 1.000 rg 1 0 0 1 82 810 Tm (Vegora Fresh Market) Tj ET
+BT /F1 9 Tf 0.900 0.970 0.930 rg 1 0 0 1 82 793 Tm (Organic produce delivered daily) Tj ET
+BT /F2 18 Tf 1.000 1.000 1.000 rg 1 0 0 1 460 810 Tm (INVOICE) Tj ET
+BT /F1 10 Tf 0.920 1.000 0.950 rg 1 0 0 1 430 792 Tm (INV-000015) Tj ET
+BT /F2 9 Tf 0.350 0.350 0.350 rg 1 0 0 1 46 742 Tm (Order Number) Tj ET
+BT /F1 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 46 727 Tm (#15) Tj ET
+BT /F2 9 Tf 0.350 0.350 0.350 rg 1 0 0 1 220 742 Tm (Issue Date) Tj ET
+BT /F1 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 220 727 Tm (Mar 31, 2026 07:58 PM) Tj ET
+BT /F2 9 Tf 0.350 0.350 0.350 rg 1 0 0 1 430 742 Tm (Status) Tj ET
+BT /F1 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 430 727 Tm (Placed) Tj ET
+0.970 0.980 1.000 rg 40 620 250 90 re f
+0.960 1.000 0.970 rg 305 620 250 90 re f
+BT /F2 11 Tf 0.160 0.160 0.160 rg 1 0 0 1 50 694 Tm (Bill To) Tj ET
+BT /F2 11 Tf 0.160 0.160 0.160 rg 1 0 0 1 315 694 Tm (Shipping Details) Tj ET
+BT /F2 10 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 676 Tm (Ushan Rashmika) Tj ET
+BT /F1 9 Tf 0.250 0.250 0.250 rg 1 0 0 1 50 661 Tm (ushanrashmika23@gmail.com) Tj ET
+BT /F1 9 Tf 0.250 0.250 0.250 rg 1 0 0 1 315 676 Tm (23123) Tj ET
+BT /F1 9 Tf 0.250 0.250 0.250 rg 1 0 0 1 315 662 Tm (3213 23123) Tj ET
+BT /F1 9 Tf 0.250 0.250 0.250 rg 1 0 0 1 315 648 Tm (Phone: 2312312) Tj ET
+BT /F1 9 Tf 0.250 0.250 0.250 rg 1 0 0 1 315 634 Tm (Note: 31231) Tj ET
+0.200 0.740 0.450 rg 40 592 515 22 re f
+BT /F2 10 Tf 1.000 1.000 1.000 rg 1 0 0 1 48 599 Tm (Item) Tj ET
+BT /F2 10 Tf 1.000 1.000 1.000 rg 1 0 0 1 340 599 Tm (Qty) Tj ET
+BT /F2 10 Tf 1.000 1.000 1.000 rg 1 0 0 1 395 599 Tm (Unit Price) Tj ET
+BT /F2 10 Tf 1.000 1.000 1.000 rg 1 0 0 1 488 599 Tm (Total) Tj ET
+1.000 1.000 1.000 rg 40 570 515 22 re f
+0.900 0.930 0.900 RG 40 570 515 22 re S
+BT /F1 9 Tf 0.150 0.150 0.150 rg 1 0 0 1 48 577 Tm (Organic Carrots) Tj ET
+BT /F1 9 Tf 0.150 0.150 0.150 rg 1 0 0 1 345 577 Tm (2) Tj ET
+BT /F1 9 Tf 0.150 0.150 0.150 rg 1 0 0 1 395 577 Tm ($2.15) Tj ET
+BT /F2 9 Tf 0.150 0.150 0.150 rg 1 0 0 1 488 577 Tm ($4.30) Tj ET
+0.970 0.990 0.970 rg 355 468 200 88 re f
+0.880 0.930 0.880 RG 355 468 200 88 re S
+BT /F1 10 Tf 0.200 0.200 0.200 rg 1 0 0 1 365 538 Tm (Subtotal) Tj ET
+BT /F1 10 Tf 0.200 0.200 0.200 rg 1 0 0 1 482 538 Tm ($4.30) Tj ET
+BT /F1 10 Tf 0.200 0.200 0.200 rg 1 0 0 1 365 522 Tm (Discount) Tj ET
+BT /F1 10 Tf 0.200 0.200 0.200 rg 1 0 0 1 482 522 Tm (-$0.00) Tj ET
+BT /F1 10 Tf 0.200 0.200 0.200 rg 1 0 0 1 365 506 Tm (Shipping) Tj ET
+BT /F1 10 Tf 0.200 0.200 0.200 rg 1 0 0 1 482 506 Tm ($5.00) Tj ET
+BT /F1 10 Tf 0.200 0.200 0.200 rg 1 0 0 1 365 490 Tm (Tax) Tj ET
+BT /F1 10 Tf 0.200 0.200 0.200 rg 1 0 0 1 482 490 Tm ($0.43) Tj ET
+0.200 0.740 0.450 rg 355 468 200 24 re f
+BT /F2 11 Tf 1.000 1.000 1.000 rg 1 0 0 1 365 476 Tm (TOTAL) Tj ET
+BT /F2 11 Tf 1.000 1.000 1.000 rg 1 0 0 1 482 476 Tm ($9.73) Tj ET
+0.850 0.880 0.850 RG 40 62 m 555 62 l S
+BT /F1 9 Tf 0.400 0.400 0.400 rg 1 0 0 1 40 46 Tm (Thank you for your order. For support: support@vegora.com) Tj ET
+BT /F1 8 Tf 0.450 0.450 0.450 rg 1 0 0 1 470 30 Tm (Page 1 of 1) Tj ET
+endstream endobj
+xref
+0 7
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000251 00000 n 
+0000000321 00000 n 
+0000000396 00000 n 
+trailer << /Size 7 /Root 1 0 R >>
+startxref
+3681
+%%EOF
