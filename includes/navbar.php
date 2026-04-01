@@ -30,8 +30,8 @@ $currentPage = basename($_SERVER['PHP_SELF']);
       
       <div class="d-flex align-items-center gap-4">
         <!-- Search Bar -->
-        <form class="position-relative d-none d-lg-block">
-          <input class="form-control rounded-pill pe-5" type="search" placeholder="Search veggies..." style="width: 250px; background-color: #f3f4f6; border: none; padding-left: 20px;">
+        <form class="position-relative d-none d-lg-block" method="GET" action="shop.php">
+          <input class="form-control rounded-pill pe-5" type="search" name="q" value="<?php echo htmlspecialchars((string)($_GET['q'] ?? '')); ?>" placeholder="Search veggies..." style="width: 250px; background-color: #f3f4f6; border: none; padding-left: 20px;">
           <button type="submit" class="btn position-absolute end-0 top-50 translate-middle-y text-muted pb-2">
             <i class="fa-solid fa-magnifying-glass"></i>
           </button>

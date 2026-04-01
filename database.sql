@@ -19,6 +19,12 @@ CREATE TABLE IF NOT EXISTS users (
 INSERT IGNORE INTO users (name, email, password, role) VALUES 
 ('Super Admin', 'admin@vegora.com', '$2y$10$wN1I41Ehm3q2c5cIq78fA.qY.c88vT5y.2M2c99T33l4xQjJp6T/y', 'admin');
 
+CREATE TABLE IF NOT EXISTS product_categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS products (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -27,10 +33,17 @@ CREATE TABLE IF NOT EXISTS products (
     image VARCHAR(255) NOT NULL,
     stock INT NOT NULL DEFAULT 0,
     stock_limit INT NOT NULL DEFAULT 20,
-    category VARCHAR(50) NOT NULL,
+    category_id INT NOT NULL,
     description TEXT DEFAULT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (category_id) REFERENCES product_categories(id) ON DELETE RESTRICT
 );
+
+INSERT IGNORE INTO product_categories (id, name) VALUES
+(1, 'Organic'),
+(2, 'Root Vegetables'),
+(3, 'Greens'),
+(4, 'Onions & Garlic');
 
 CREATE TABLE IF NOT EXISTS cart (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -74,10 +87,10 @@ CREATE TABLE IF NOT EXISTS product_reviews (
 );
 
 -- Insert some mock data
-INSERT IGNORE INTO products (id, name, price, discounted_price, image, stock, stock_limit, category, description) VALUES
-(1, 'Fresh Tomatoes', 3.99, NULL, 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=400', 50, 15, 'Organic', NULL),
-(2, 'Organic Carrots', 2.49, 1.99, 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?auto=format&fit=crop&q=80&w=400', 100, 25, 'Root', NULL),
-(3, 'Fresh Broccoli', 4.99, NULL, 'https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?auto=format&fit=crop&q=80&w=400', 30, 12, 'Greens', NULL),
-(4, 'Bell Peppers', 5.99, 4.79, 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&q=80&w=400', 40, 10, 'Organic', NULL),
-(5, 'Red Onions', 1.99, NULL, 'https://images.unsplash.com/photo-1615486511484-93e50b10a406?auto=format&fit=crop&q=80&w=400', 80, 20, 'Onions & Garlic', NULL),
-(6, 'Organic Potatoes', 2.99, NULL, 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&q=80&w=400', 150, 30, 'Root', NULL);
+INSERT IGNORE INTO products (id, name, price, discounted_price, image, stock, stock_limit, category_id, description) VALUES
+(1, 'Fresh Tomatoes', 3.99, NULL, 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=400', 50, 15, 1, NULL),
+(2, 'Organic Carrots', 2.49, 1.99, 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?auto=format&fit=crop&q=80&w=400', 100, 25, 2, NULL),
+(3, 'Fresh Broccoli', 4.99, NULL, 'https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?auto=format&fit=crop&q=80&w=400', 30, 12, 3, NULL),
+(4, 'Bell Peppers', 5.99, 4.79, 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&q=80&w=400', 40, 10, 1, NULL),
+(5, 'Red Onions', 1.99, NULL, 'https://images.unsplash.com/photo-1615486511484-93e50b10a406?auto=format&fit=crop&q=80&w=400', 80, 20, 4, NULL),
+(6, 'Organic Potatoes', 2.99, NULL, 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&q=80&w=400', 150, 30, 2, NULL);

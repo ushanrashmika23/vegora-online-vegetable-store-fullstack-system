@@ -2,6 +2,7 @@
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../models/Product.php';
+require_once __DIR__ . '/../models/Category.php';
 
 $id = intval($_GET['id'] ?? 0);
 if ($id === 0) {
@@ -10,7 +11,9 @@ if ($id === 0) {
 }
 
 $productModel = new Product($pdo);
+$categoryModel = new Category($pdo);
 $product = $productModel->findById($id);
+$categories = $categoryModel->getAll();
 
 if (!$product) {
     $_SESSION['admin_error'] = "Product not found.";
@@ -83,12 +86,12 @@ require_once __DIR__ . '/includes/header.php';
 
         <div class="mb-4">
           <label for="category" class="form-label fw-bold">Category</label>
-          <select name="category" id="category" class="form-select bg-light border-0 py-2" required>
-            <option value="Organic" <?php echo $product['category'] === 'Organic' ? 'selected' : ''; ?>>Organic</option>
-            <option value="Root" <?php echo $product['category'] === 'Root' ? 'selected' : ''; ?>>Root Vegetables</option>
-            <option value="Greens" <?php echo $product['category'] === 'Greens' ? 'selected' : ''; ?>>Greens</option>
-            <option value="Onions & Garlic" <?php echo $product['category'] === 'Onions & Garlic' ? 'selected' : ''; ?>>Onions & Garlic</option>
+          <select name="category_id" id="category" class="form-select bg-light border-0 py-2" required>
+            <?php foreach ($categories as $cat): ?>
+              <option value="<?php echo (int)$cat['id']; ?>" <?php echo (int)$product['category_id'] === (int)$cat['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($cat['name']); ?></option>
+            <?php endforeach; ?>
           </select>
+          <div class="form-text text-muted">Manage category list from <a href="categories.php" class="text-decoration-none">Categories</a>.</div>
         </div>
 
         <div class="mb-5">

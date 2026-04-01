@@ -10,13 +10,13 @@ class Product {
 
     // Fetch all products
     public function getAll() {
-        $stmt = $this->pdo->query("SELECT *, CASE WHEN discounted_price IS NOT NULL AND discounted_price > 0 AND discounted_price < price THEN discounted_price ELSE price END AS effective_price FROM products ORDER BY created_at DESC");
+        $stmt = $this->pdo->query("SELECT p.*, pc.name AS category, CASE WHEN p.discounted_price IS NOT NULL AND p.discounted_price > 0 AND p.discounted_price < p.price THEN p.discounted_price ELSE p.price END AS effective_price FROM products p LEFT JOIN product_categories pc ON pc.id = p.category_id ORDER BY p.created_at DESC");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
     // Find a single product by ID
     public function findById($id) {
-        $stmt = $this->pdo->prepare("SELECT *, CASE WHEN discounted_price IS NOT NULL AND discounted_price > 0 AND discounted_price < price THEN discounted_price ELSE price END AS effective_price FROM products WHERE id = :id LIMIT 1");
+        $stmt = $this->pdo->prepare("SELECT p.*, pc.name AS category, CASE WHEN p.discounted_price IS NOT NULL AND p.discounted_price > 0 AND p.discounted_price < p.price THEN p.discounted_price ELSE p.price END AS effective_price FROM products p LEFT JOIN product_categories pc ON pc.id = p.category_id WHERE p.id = :id LIMIT 1");
         $stmt->execute(['id' => $id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -26,10 +26,11 @@ class Product {
         $limit = max(1, (int)$limit);
 
         $sql = "
-            SELECT p.*, 
+                 SELECT p.*, pc.name AS category,
                    CASE WHEN p.discounted_price IS NOT NULL AND p.discounted_price > 0 AND p.discounted_price < p.price THEN p.discounted_price ELSE p.price END AS effective_price,
                    SUM(oi.quantity) AS total_sold
             FROM products p
+                 LEFT JOIN product_categories pc ON pc.id = p.category_id
             JOIN order_items oi ON oi.product_id = p.id
             JOIN orders o ON o.id = oi.order_id
             WHERE o.status != 'Cancelled'
@@ -49,7 +50,7 @@ class Product {
 
         // Fallback to latest products if no orders exist yet.
         if (empty($items)) {
-            $fallbackSql = "SELECT *, CASE WHEN discounted_price IS NOT NULL AND discounted_price > 0 AND discounted_price < price THEN discounted_price ELSE price END AS effective_price, 0 AS total_sold FROM products";
+            $fallbackSql = "SELECT p.*, pc.name AS category, CASE WHEN p.discounted_price IS NOT NULL AND p.discounted_price > 0 AND p.discounted_price < p.price THEN p.discounted_price ELSE p.price END AS effective_price, 0 AS total_sold FROM products p LEFT JOIN product_categories pc ON pc.id = p.category_id";
             $fallbackParams = [];
             if ($excludeProductId !== null) {
                 $fallbackSql .= " WHERE id != :exclude_id";
@@ -118,8 +119,8 @@ class Product {
     }
 
     // Add a new product
-    public function add($name, $price, $discountedPrice, $image, $stock, $stockLimit, $category, $description = null) {
-        $stmt = $this->pdo->prepare("INSERT INTO products (name, price, discounted_price, image, stock, stock_limit, category, description) VALUES (:name, :price, :discounted_price, :image, :stock, :stock_limit, :category, :description)");
+    public function add($name, $price, $discountedPrice, $image, $stock, $stockLimit, $categoryId, $description = null) {
+        $stmt = $this->pdo->prepare("INSERT INTO products (name, price, discounted_price, image, stock, stock_limit, category_id, description) VALUES (:name, :price, :discounted_price, :image, :stock, :stock_limit, :category_id, :description)");
         return $stmt->execute([
             'name' => $name,
             'price' => $price,
@@ -127,14 +128,14 @@ class Product {
             'image' => $image,
             'stock' => $stock,
             'stock_limit' => $stockLimit,
-            'category' => $category,
+            'category_id' => (int)$categoryId,
             'description' => $description
         ]);
     }
 
     // Update an existing product
-    public function update($id, $name, $price, $discountedPrice, $image, $stock, $stockLimit, $category, $description = null) {
-        $stmt = $this->pdo->prepare("UPDATE products SET name = :name, price = :price, discounted_price = :discounted_price, image = :image, stock = :stock, stock_limit = :stock_limit, category = :category, description = :description WHERE id = :id");
+    public function update($id, $name, $price, $discountedPrice, $image, $stock, $stockLimit, $categoryId, $description = null) {
+        $stmt = $this->pdo->prepare("UPDATE products SET name = :name, price = :price, discounted_price = :discounted_price, image = :image, stock = :stock, stock_limit = :stock_limit, category_id = :category_id, description = :description WHERE id = :id");
         return $stmt->execute([
             'id' => $id,
             'name' => $name,
@@ -143,7 +144,7 @@ class Product {
             'image' => $image,
             'stock' => $stock,
             'stock_limit' => $stockLimit,
-            'category' => $category,
+            'category_id' => (int)$categoryId,
             'description' => $description
         ]);
     }

@@ -31,6 +31,11 @@ $currentPage = basename($_SERVER['PHP_SELF']);
       </a>
     </li>
     <li class="nav-item mb-2">
+      <a class="nav-link <?php echo $currentPage === 'categories.php' ? 'active' : ''; ?>" href="categories.php">
+        <i class="fa-solid fa-layer-group me-2 text-center" style="width: 20px;"></i> Categories
+      </a>
+    </li>
+    <li class="nav-item mb-2">
       <a class="nav-link <?php echo $currentPage === 'coupons.php' ? 'active' : ''; ?>" href="coupons.php">
         <i class="fa-solid fa-ticket me-2 text-center" style="width: 20px;"></i> Coupons
       </a>

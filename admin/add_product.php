@@ -1,5 +1,11 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../models/Category.php';
+
+$categoryModel = new Category($pdo);
+$categories = $categoryModel->getAll();
+
 $pageTitle = 'Add Product - Vegora Admin';
 $showBackButton = true;
 $backLink = 'products.php';
@@ -62,13 +68,13 @@ require_once __DIR__ . '/includes/header.php';
 
         <div class="mb-4">
           <label for="category" class="form-label fw-bold">Category</label>
-          <select name="category" id="category" class="form-select bg-light border-0 py-2" required>
+          <select name="category_id" id="category" class="form-select bg-light border-0 py-2" required>
             <option value="">Select Category...</option>
-            <option value="Organic">Organic</option>
-            <option value="Root">Root Vegetables</option>
-            <option value="Greens">Greens</option>
-            <option value="Onions & Garlic">Onions & Garlic</option>
+            <?php foreach ($categories as $cat): ?>
+              <option value="<?php echo (int)$cat['id']; ?>"><?php echo htmlspecialchars($cat['name']); ?></option>
+            <?php endforeach; ?>
           </select>
+          <div class="form-text text-muted">Manage category list from <a href="categories.php" class="text-decoration-none">Categories</a>.</div>
         </div>
 
         <div class="mb-5">

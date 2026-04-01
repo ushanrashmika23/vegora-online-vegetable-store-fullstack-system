@@ -11,10 +11,11 @@ class Cart {
     // Get all items in user's cart
     public function getItems($userId) {
         $stmt = $this->pdo->prepare("
-            SELECT c.id as cart_id, c.quantity, p.*, 
+            SELECT c.id as cart_id, c.quantity, p.*, pc.name AS category,
                    CASE WHEN p.discounted_price IS NOT NULL AND p.discounted_price > 0 AND p.discounted_price < p.price THEN p.discounted_price ELSE p.price END AS effective_price
             FROM cart c 
             JOIN products p ON c.product_id = p.id 
+            LEFT JOIN product_categories pc ON pc.id = p.category_id
             WHERE c.user_id = :user_id
         ");
         $stmt->execute(['user_id' => $userId]);

@@ -4,6 +4,87 @@ require_once __DIR__ . '/controllers/productController.php';
 
 // Fetch products from database
 $products = getAllProducts();
+
+$selectedCategory = trim((string)($_GET['category'] ?? ''));
+$selectedSort = trim((string)($_GET['sort'] ?? 'default'));
+$searchQuery = trim((string)($_GET['q'] ?? ''));
+$selectedMaxPrice = isset($_GET['max_price']) ? (float)$_GET['max_price'] : 50.0;
+if ($selectedMaxPrice <= 0) {
+  $selectedMaxPrice = 50.0;
+}
+
+$categoryCounts = [];
+foreach ($products as $p) {
+  $cat = trim((string)($p['category'] ?? 'Uncategorized'));
+  if ($cat === '') {
+    $cat = 'Uncategorized';
+  }
+  if (!isset($categoryCounts[$cat])) {
+    $categoryCounts[$cat] = 0;
+  }
+  $categoryCounts[$cat]++;
+}
+ksort($categoryCounts);
+
+$filteredProducts = array_values(array_filter($products, function ($p) use ($selectedCategory, $selectedMaxPrice, $searchQuery) {
+  $effectivePrice = (!empty($p['discounted_price']) && $p['discounted_price'] > 0 && $p['discounted_price'] < $p['price'])
+    ? (float)$p['discounted_price']
+    : (float)$p['price'];
+
+  $matchesCategory = $selectedCategory === '' || strcasecmp((string)($p['category'] ?? ''), $selectedCategory) === 0;
+  $matchesPrice = $effectivePrice <= $selectedMaxPrice;
+  $haystack = strtolower(trim((string)(($p['name'] ?? '') . ' ' . ($p['category'] ?? '') . ' ' . ($p['description'] ?? ''))));
+  $needle = strtolower($searchQuery);
+  $matchesQuery = $needle === '' || strpos($haystack, $needle) !== false;
+
+  return $matchesCategory && $matchesPrice && $matchesQuery;
+}));
+
+switch ($selectedSort) {
+  case 'price_asc':
+    usort($filteredProducts, function ($a, $b) {
+      $aPrice = (!empty($a['discounted_price']) && $a['discounted_price'] > 0 && $a['discounted_price'] < $a['price']) ? (float)$a['discounted_price'] : (float)$a['price'];
+      $bPrice = (!empty($b['discounted_price']) && $b['discounted_price'] > 0 && $b['discounted_price'] < $b['price']) ? (float)$b['discounted_price'] : (float)$b['price'];
+      return $aPrice <=> $bPrice;
+    });
+    break;
+  case 'price_desc':
+    usort($filteredProducts, function ($a, $b) {
+      $aPrice = (!empty($a['discounted_price']) && $a['discounted_price'] > 0 && $a['discounted_price'] < $a['price']) ? (float)$a['discounted_price'] : (float)$a['price'];
+      $bPrice = (!empty($b['discounted_price']) && $b['discounted_price'] > 0 && $b['discounted_price'] < $b['price']) ? (float)$b['discounted_price'] : (float)$b['price'];
+      return $bPrice <=> $aPrice;
+    });
+    break;
+  case 'latest':
+    usort($filteredProducts, function ($a, $b) {
+      return strtotime((string)($b['created_at'] ?? '')) <=> strtotime((string)($a['created_at'] ?? ''));
+    });
+    break;
+  default:
+    // Keep default DB order.
+    break;
+}
+
+function buildShopUrl(array $overrides = [])
+{
+  $params = [
+    'category' => $_GET['category'] ?? '',
+    'max_price' => $_GET['max_price'] ?? 50,
+    'sort' => $_GET['sort'] ?? 'default',
+    'q' => $_GET['q'] ?? ''
+  ];
+
+  foreach ($overrides as $key => $value) {
+    $params[$key] = $value;
+  }
+
+  $params = array_filter($params, function ($v) {
+    return !($v === '' || $v === null);
+  });
+
+  $query = http_build_query($params);
+  return 'shop.php' . ($query !== '' ? '?' . $query : '');
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -45,59 +126,67 @@ $products = getAllProducts();
         <div class="filter-card">
           <h4 class="filter-title">Categories</h4>
           <div class="list-group list-group-flush mb-4">
-            <a href="#" class="list-group-item list-group-item-action active d-flex justify-content-between align-items-center">
+            <a href="<?php echo htmlspecialchars(buildShopUrl(['category' => ''])); ?>" class="list-group-item list-group-item-action <?php echo $selectedCategory === '' ? 'active' : ''; ?> d-flex justify-content-between align-items-center">
               All Fresh
               <span class="badge bg-success rounded-pill"><?php echo count($products); ?></span>
             </a>
-            <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-              Organic Greens
-              <span class="badge bg-light text-dark rounded-pill">0</span>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-              Root Vegetables
-              <span class="badge bg-light text-dark rounded-pill">0</span>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-              Peppers & Tomatoes
-              <span class="badge bg-light text-dark rounded-pill">0</span>
-            </a>
+            <?php foreach ($categoryCounts as $categoryName => $count): ?>
+              <a href="<?php echo htmlspecialchars(buildShopUrl(['category' => $categoryName])); ?>" class="list-group-item list-group-item-action <?php echo strcasecmp($selectedCategory, $categoryName) === 0 ? 'active' : ''; ?> d-flex justify-content-between align-items-center">
+                <?php echo htmlspecialchars($categoryName); ?>
+                <span class="badge bg-light text-dark rounded-pill"><?php echo (int)$count; ?></span>
+              </a>
+            <?php endforeach; ?>
           </div>
 
           <h4 class="filter-title mt-2">Filter by Price</h4>
-          <div class="px-2">
-            <input type="range" class="form-range" min="0" max="50" step="1" id="priceRange" style="accent-color: var(--vegi-green);">
-            <div class="d-flex justify-content-between text-muted fw-bold mt-2">
+          <form method="GET" action="shop.php" class="px-2">
+            <input type="hidden" name="category" value="<?php echo htmlspecialchars($selectedCategory); ?>">
+            <input type="hidden" name="sort" value="<?php echo htmlspecialchars($selectedSort); ?>">
+            <input type="hidden" name="q" value="<?php echo htmlspecialchars($searchQuery); ?>">
+            <input type="range" class="form-range" min="1" max="200" step="1" id="priceRange" name="max_price" value="<?php echo (int)$selectedMaxPrice; ?>" style="accent-color: var(--vegi-green);">
+            <div class="d-flex justify-content-between text-muted fw-bold mt-2 mb-2">
               <span>$0</span>
-              <span>$50</span>
+              <span id="priceValue">$<?php echo (int)$selectedMaxPrice; ?></span>
             </div>
-            <button class="btn btn-outline-primary w-100 mt-4 rounded-pill">Apply Filter</button>
-          </div>
+            <button type="submit" class="btn btn-outline-primary w-100 mt-3 rounded-pill">Apply Filter</button>
+          </form>
         </div>
       </aside>
 
       <!-- Main Product Grid -->
       <div class="col-lg-9">
         <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-          <p class="mb-0 text-muted">Showing <strong><?php echo count($products); ?></strong> results</p>
+          <p class="mb-0 text-muted">
+            Showing <strong><?php echo count($filteredProducts); ?></strong> of <?php echo count($products); ?> results
+            <?php if ($searchQuery !== ''): ?>
+              for "<?php echo htmlspecialchars($searchQuery); ?>"
+            <?php endif; ?>
+          </p>
           <div class="d-flex align-items-center gap-2">
             <label class="text-muted fw-semibold flex-shrink-0">Sort by:</label>
-            <select class="form-select border-0 shadow-sm rounded-pill fw-semibold bg-white" style="cursor: pointer;">
-              <option>Default Sorting</option>
-              <option>Price: Low to High</option>
-              <option>Price: High to Low</option>
-              <option>Latest</option>
-            </select>
+            <form method="GET" action="shop.php" id="sortForm" class="m-0">
+              <input type="hidden" name="category" value="<?php echo htmlspecialchars($selectedCategory); ?>">
+              <input type="hidden" name="max_price" value="<?php echo (int)$selectedMaxPrice; ?>">
+              <input type="hidden" name="q" value="<?php echo htmlspecialchars($searchQuery); ?>">
+              <select name="sort" class="form-select border-0 shadow-sm rounded-pill fw-semibold bg-white" style="cursor: pointer;" onchange="document.getElementById('sortForm').submit();">
+                <option value="default" <?php echo $selectedSort === 'default' ? 'selected' : ''; ?>>Default Sorting</option>
+                <option value="price_asc" <?php echo $selectedSort === 'price_asc' ? 'selected' : ''; ?>>Price: Low to High</option>
+                <option value="price_desc" <?php echo $selectedSort === 'price_desc' ? 'selected' : ''; ?>>Price: High to Low</option>
+                <option value="latest" <?php echo $selectedSort === 'latest' ? 'selected' : ''; ?>>Latest</option>
+              </select>
+            </form>
           </div>
         </div>
 
         <div class="row g-4">
-          <?php if (empty($products)): ?>
+          <?php if (empty($filteredProducts)): ?>
             <div class="col-12 py-5 text-center">
               <i class="fa-solid fa-basket-shopping text-muted fs-1 mb-3 opacity-50"></i>
-              <h4 class="text-muted">No products available at the moment.</h4>
+              <h4 class="text-muted">No products match your selected filters.</h4>
+              <a href="shop.php" class="btn btn-outline-primary rounded-pill mt-3 px-4">Clear Filters</a>
             </div>
           <?php else: ?>
-            <?php foreach ($products as $product): ?>
+            <?php foreach ($filteredProducts as $product): ?>
               <div class="col-xl-4 col-md-6">
                 <div class="card product-card h-100">
                   <!-- Wrapped content inside anchor -->
@@ -135,7 +224,7 @@ $products = getAllProducts();
         </div>
 
         <!-- Pagination -->
-        <?php if (count($products) > 0): ?>
+        <?php if (count($filteredProducts) > 0): ?>
         <nav class="mt-5 d-flex justify-content-center">
           <ul class="pagination">
             <li class="page-item disabled">
@@ -157,6 +246,16 @@ $products = getAllProducts();
 
   <!-- Injected Footer -->
   <?php require_once 'includes/footer.php'; ?>
+  <script>
+    (function () {
+      const range = document.getElementById('priceRange');
+      const value = document.getElementById('priceValue');
+      if (!range || !value) return;
+      range.addEventListener('input', function () {
+        value.textContent = '$' + range.value;
+      });
+    })();
+  </script>
   <script src="assets/js/cart.js"></script>
 </body>
 </html>

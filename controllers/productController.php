@@ -7,8 +7,10 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../models/Product.php';
+require_once __DIR__ . '/../models/Category.php';
 
 $productModel = new Product($pdo);
+$categoryModel = new Category($pdo);
 
 /**
  * Fetch all available products from the database for the shop grid.
@@ -38,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $discountedPrice = $discountedPriceRaw === '' ? null : (float)$discountedPriceRaw;
         $stock = (int)($_POST['stock'] ?? 0);
         $stockLimit = (int)($_POST['stock_limit'] ?? 20);
-        $category = trim($_POST['category'] ?? '');
+        $categoryId = (int)($_POST['category_id'] ?? 0);
         $description = trim($_POST['description'] ?? '');
         $id = $_POST['id'] ?? null;
 
@@ -65,8 +67,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Basic validation
-        if (empty($name) || $price <= 0 || empty($category)) {
+        if (empty($name) || $price <= 0 || $categoryId <= 0) {
             $_SESSION['admin_error'] = "Name, valid price, and category are required.";
+            $redirect = $action === 'edit' ? "../admin/edit_product.php?id=$id" : "../admin/add_product.php";
+            header("Location: $redirect");
+            exit;
+        }
+
+        if (!$categoryModel->findById($categoryId)) {
+            $_SESSION['admin_error'] = "Selected category is invalid.";
             $redirect = $action === 'edit' ? "../admin/edit_product.php?id=$id" : "../admin/add_product.php";
             header("Location: $redirect");
             exit;
@@ -96,13 +105,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Database commit
         if ($action === 'add') {
-            if ($productModel->add($name, $price, $discountedPrice, $image, $stock, $stockLimit, $category, $description)) {
+            if ($productModel->add($name, $price, $discountedPrice, $image, $stock, $stockLimit, $categoryId, $description)) {
                 $_SESSION['admin_success'] = "Product successfully created!";
             } else {
                 $_SESSION['admin_error'] = "Database error while adding product.";
             }
         } else {
-            if ($productModel->update($id, $name, $price, $discountedPrice, $image, $stock, $stockLimit, $category, $description)) {
+            if ($productModel->update($id, $name, $price, $discountedPrice, $image, $stock, $stockLimit, $categoryId, $description)) {
                 $_SESSION['admin_success'] = "Product updated successfully!";
             } else {
                 $_SESSION['admin_error'] = "Failed to update product.";

@@ -77,7 +77,6 @@ $total = ($subtotal - $discount_amount) + $shipping + $tax;
           <form id="checkoutForm" action="controllers/orderController.php?action=checkout" method="POST">
             
             <h5 class="fw-bold mb-3 mt-4 text-dark"><i class="fa-regular fa-map me-2 text-success"></i> Shipping Details</h5>
-            <div id="addressStorageNotice" class="alert alert-info border-0 py-2 px-3 small d-none" role="alert"></div>
             <div class="row g-3">
               <div class="col-12">
                 <label for="shipping_address" class="form-label text-muted fw-semibold">Delivery Address</label>
@@ -99,12 +98,6 @@ $total = ($subtotal - $discount_amount) + $shipping + $tax;
                 <label for="shipping_notes" class="form-label text-muted fw-semibold">Address Note (Optional)</label>
                 <input type="text" id="shipping_notes" name="shipping_notes" class="form-control" placeholder="Apartment 12, near gate B">
               </div>
-            </div>
-
-            <div class="d-flex flex-wrap gap-2 mt-3">
-              <button type="button" id="saveAddressBtn" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold"><i class="fa-solid fa-floppy-disk me-1"></i> Save Address</button>
-              <button type="button" id="clearAddressBtn" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-bold"><i class="fa-solid fa-trash me-1"></i> Clear Saved Address</button>
-              <span class="text-muted small align-self-center">Saved on this browser only. You can edit anytime.</span>
             </div>
 
             <h5 class="fw-bold mb-3 mt-5 text-dark"><i class="fa-regular fa-credit-card me-2 text-success"></i> Payment Method</h5>
@@ -213,17 +206,6 @@ $total = ($subtotal - $discount_amount) + $shipping + $tax;
         shipping_notes: document.getElementById('shipping_notes')
       };
 
-      const notice = document.getElementById('addressStorageNotice');
-      const saveBtn = document.getElementById('saveAddressBtn');
-      const clearBtn = document.getElementById('clearAddressBtn');
-
-      function showNotice(message, type) {
-        if (!notice) return;
-        notice.className = 'alert border-0 py-2 px-3 small';
-        notice.classList.add(type === 'success' ? 'alert-success' : (type === 'error' ? 'alert-danger' : 'alert-info'));
-        notice.textContent = message;
-      }
-
       function collectAddressData() {
         return {
           shipping_address: fields.shipping_address ? fields.shipping_address.value.trim() : '',
@@ -243,21 +225,18 @@ $total = ($subtotal - $discount_amount) + $shipping + $tax;
         });
       }
 
-      function saveAddress() {
+      function saveAddressSilently() {
         const data = collectAddressData();
-        if (!data.shipping_address || !data.shipping_city || !data.shipping_zip || !data.shipping_phone) {
-          showNotice('Fill in address, city, zip, and phone before saving locally.', 'error');
-          return false;
+
+        const hasAnyInput = Object.values(data).some(function (value) {
+          return value !== '';
+        });
+
+        if (!hasAnyInput) {
+          return;
         }
 
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        showNotice('Address saved in this browser. You can still edit it anytime.', 'success');
-        return true;
-      }
-
-      function clearSavedAddress() {
-        localStorage.removeItem(STORAGE_KEY);
-        showNotice('Saved local address removed.', 'info');
       }
 
       const savedRaw = localStorage.getItem(STORAGE_KEY);
@@ -265,22 +244,20 @@ $total = ($subtotal - $discount_amount) + $shipping + $tax;
         try {
           const savedData = JSON.parse(savedRaw);
           applyAddressData(savedData);
-          showNotice('Loaded your saved local address. Edit if needed.', 'info');
         } catch (e) {
           localStorage.removeItem(STORAGE_KEY);
         }
       }
 
-      if (saveBtn) {
-        saveBtn.addEventListener('click', saveAddress);
-      }
-
-      if (clearBtn) {
-        clearBtn.addEventListener('click', clearSavedAddress);
-      }
+      Object.keys(fields).forEach(function (key) {
+        if (fields[key]) {
+          fields[key].addEventListener('input', saveAddressSilently);
+          fields[key].addEventListener('change', saveAddressSilently);
+        }
+      });
 
       form.addEventListener('submit', function () {
-        saveAddress();
+        saveAddressSilently();
       });
     })();
   </script>
