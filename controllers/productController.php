@@ -121,6 +121,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: ../admin/products.php');
         exit;
     }
+
+    if ($action === 'restock') {
+        $id = (int)($_POST['id'] ?? 0);
+        $amount = (int)($_POST['amount'] ?? 0);
+
+        if ($id <= 0 || $amount <= 0) {
+            $_SESSION['admin_error'] = 'Invalid restock request.';
+            header('Location: ../admin/products.php');
+            exit;
+        }
+
+        if ($productModel->increaseStock($id, $amount)) {
+            $_SESSION['admin_success'] = "Stock updated: +{$amount} units added.";
+        } else {
+            $_SESSION['admin_error'] = 'Could not update product stock.';
+        }
+
+        header('Location: ../admin/products.php');
+        exit;
+    }
 } 
 elseif ($_SERVER['REQUEST_METHOD'] === 'GET' && $action === 'delete') {
     $id = intval($_GET['id'] ?? 0);

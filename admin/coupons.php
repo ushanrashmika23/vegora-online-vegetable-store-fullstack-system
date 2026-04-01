@@ -130,13 +130,13 @@ require_once __DIR__ . '/includes/header.php';
                                     </td>
                                     <td class="py-3 text-center">
                                         <?php if ($c['is_active']): ?>
-                                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 fw-bold"><i class="fa-solid fa-circle-check me-1"></i> Active</span>
+                                            <span class="badge badge-chip badge-chip-success"><i class="fa-solid fa-circle-check me-1"></i> Active</span>
                                         <?php else: ?>
-                                            <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2 fw-bold"><i class="fa-solid fa-ban me-1"></i> Disabled</span>
+                                            <span class="badge badge-chip badge-chip-danger"><i class="fa-solid fa-ban me-1"></i> Disabled</span>
                                         <?php endif; ?>
                                     </td>
                                     <td class="py-3 text-center fw-semibold text-muted">
-                                        <span class="badge bg-light text-dark border px-2 py-1"><?php echo $c['usages']; ?></span>
+                                        <span class="badge badge-chip-sm badge-chip-neutral"><?php echo $c['usages']; ?></span>
                                     </td>
                                     <td class="pe-4 py-3 text-end">
                                         <a href="coupons.php?action=toggle&id=<?php echo $c['id']; ?>" class="btn btn-sm <?php echo $c['is_active'] ? 'btn-outline-warning' : 'btn-outline-success'; ?> rounded-pill px-3 fw-bold me-2">

@@ -34,6 +34,17 @@ foreach ($orders as $o) {
 }
 $totalUsers = count($users);
 
+$totalProducts = (int)$pdo->query("SELECT COUNT(*) FROM products")->fetchColumn();
+$totalCategories = (int)$pdo->query("SELECT COUNT(*) FROM product_categories")->fetchColumn();
+$todayOrders = (int)$pdo->query("SELECT COUNT(*) FROM orders WHERE DATE(created_at) = CURDATE()")->fetchColumn();
+$monthlyRevenue = (float)$pdo->query("SELECT COALESCE(SUM(total), 0) FROM orders WHERE status = 'Delivered' AND YEAR(created_at) = YEAR(CURDATE()) AND MONTH(created_at) = MONTH(CURDATE())")->fetchColumn();
+
+$stmtRecent = $pdo->query("SELECT o.id, o.total, o.status, o.created_at, u.name AS customer_name FROM orders o JOIN users u ON u.id = o.user_id ORDER BY o.created_at DESC LIMIT 6");
+$recentOrders = $stmtRecent->fetchAll(PDO::FETCH_ASSOC);
+
+$stmtTopCustomers = $pdo->query("SELECT u.id, u.name, u.email, COUNT(o.id) AS order_count, COALESCE(SUM(o.total), 0) AS lifetime_value FROM users u JOIN orders o ON o.user_id = u.id WHERE o.status != 'Cancelled' GROUP BY u.id ORDER BY lifetime_value DESC LIMIT 5");
+$topCustomers = $stmtTopCustomers->fetchAll(PDO::FETCH_ASSOC);
+
 // --- 2. TRAILING 7-DAY REVENUE ANALYTICS ---
 $last7Days = [];
 for ($i = 6; $i >= 0; $i--) {
@@ -84,6 +95,17 @@ $stmtTop = $pdo->query("
     LIMIT 5
 ");
 $topProducts = $stmtTop->fetchAll(PDO::FETCH_ASSOC);
+
+function orderStatusBadgeClass(string $status): string {
+  return match ($status) {
+    'Placed' => 'badge-chip-primary',
+    'Packed' => 'badge-chip-info',
+    'Shipped' => 'badge-chip-warning',
+    'Delivered' => 'badge-chip-success',
+    'Cancelled' => 'badge-chip-danger',
+    default => 'badge-chip-neutral'
+  };
+}
 
 $pageTitle = 'Dashboard - Vegora Admin';
 $pageHeader = 'Analytics Overview';
@@ -150,13 +172,73 @@ require_once __DIR__ . '/includes/header.php';
       </div>
     </div>
 
+    <!-- Operations Snapshot -->
+    <div class="row g-4 mb-5">
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 p-4 h-100 text-white" style="background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="text-uppercase small fw-bold opacity-75">Today Orders</div>
+            <span class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width:36px;height:36px;"><i class="fa-solid fa-basket-shopping"></i></span>
+          </div>
+          <h3 class="fw-bold mb-1"><?php echo $todayOrders; ?></h3>
+          <small class="opacity-75 d-block mb-3">Orders placed since midnight</small>
+          <a href="orders.php" class="text-white text-decoration-none small fw-bold">Open Orders <i class="fa-solid fa-arrow-right ms-1"></i></a>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 p-4 h-100 text-white" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="text-uppercase small fw-bold opacity-75">Monthly Revenue</div>
+            <span class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width:36px;height:36px;"><i class="fa-solid fa-coins"></i></span>
+          </div>
+          <h3 class="fw-bold mb-1">$<?php echo number_format($monthlyRevenue, 2); ?></h3>
+          <small class="opacity-75 d-block mb-3">Delivered orders this month</small>
+          <span class="small fw-bold opacity-75"><i class="fa-solid fa-arrow-trend-up me-1"></i> Revenue momentum</span>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 p-4 h-100 text-white" style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="text-uppercase small fw-bold opacity-75">Products</div>
+            <span class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width:36px;height:36px;"><i class="fa-solid fa-carrot"></i></span>
+          </div>
+          <h3 class="fw-bold mb-1"><?php echo $totalProducts; ?></h3>
+          <small class="opacity-75 d-block mb-3">Active products in catalog</small>
+          <a href="products.php" class="text-white text-decoration-none small fw-bold">Manage Products <i class="fa-solid fa-arrow-right ms-1"></i></a>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 p-4 h-100 text-white" style="background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="text-uppercase small fw-bold opacity-75">Categories</div>
+            <span class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width:36px;height:36px;"><i class="fa-solid fa-layer-group"></i></span>
+          </div>
+          <h3 class="fw-bold mb-1"><?php echo $totalCategories; ?></h3>
+          <small class="opacity-75 d-block mb-3">Structured category groups</small>
+          <a href="categories.php" class="text-white text-decoration-none small fw-bold">Manage Categories <i class="fa-solid fa-arrow-right ms-1"></i></a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white p-4 mb-5">
+      <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-bolt text-warning me-2"></i> Quick Actions</h5>
+      <div class="d-flex flex-wrap gap-2">
+        <a href="add_product.php" class="btn btn-success rounded-pill px-3"><i class="fa-solid fa-plus me-1"></i> Add Product</a>
+        <a href="categories.php" class="btn btn-light rounded-pill px-3 border"><i class="fa-solid fa-layer-group me-1"></i> Manage Categories</a>
+        <a href="orders.php" class="btn btn-light rounded-pill px-3 border"><i class="fa-solid fa-basket-shopping me-1"></i> Review Orders</a>
+        <a href="coupons.php" class="btn btn-light rounded-pill px-3 border"><i class="fa-solid fa-ticket me-1"></i> Create Coupon</a>
+        <a href="users.php" class="btn btn-light rounded-pill px-3 border"><i class="fa-solid fa-users me-1"></i> Manage Users</a>
+      </div>
+    </div>
+
      <!-- Low Stock Watchlist -->
     <div class="row mt-2 mb-5">
       <div class="col-12">
         <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
           <div class="card-header bg-white border-bottom border-light pt-4 pb-3 px-4 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-triangle-exclamation text-danger me-2"></i> Low Stock Watchlist</h5>
-            <span class="badge bg-danger-subtle text-danger rounded-pill px-3 py-2 fw-bold"><?php echo $lowStockCount; ?> items</span>
+            <span class="badge badge-chip badge-chip-danger"><?php echo $lowStockCount; ?> items</span>
           </div>
           <div class="card-body p-0">
             <?php if (empty($lowStockProducts)): ?>
@@ -186,9 +268,9 @@ require_once __DIR__ . '/includes/header.php';
                         <td class="py-3 text-muted"><?php echo (int)$lp['stock_limit']; ?></td>
                         <td class="pe-4 py-3">
                           <?php if ((int)$lp['stock'] === 0): ?>
-                            <span class="badge bg-dark rounded-pill px-3">Out of Stock</span>
+                            <span class="badge badge-chip badge-chip-dark">Out of Stock</span>
                           <?php else: ?>
-                            <span class="badge bg-danger rounded-pill px-3">Low Stock</span>
+                            <span class="badge badge-chip badge-chip-danger">Low Stock</span>
                           <?php endif; ?>
                         </td>
                       </tr>
@@ -230,6 +312,65 @@ require_once __DIR__ . '/includes/header.php';
             <div style="height: 250px; width: 100%; position: relative;">
               <canvas id="statusChart"></canvas>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+      <div class="col-lg-7">
+        <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden h-100">
+          <div class="card-header bg-white border-bottom border-light pt-4 pb-3 px-4">
+            <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-clock-rotate-left text-primary me-2"></i> Recent Orders</h5>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="bg-light text-muted small text-uppercase">
+                <tr>
+                  <th class="ps-4 py-3 border-0">Order</th>
+                  <th class="py-3 border-0">Customer</th>
+                  <th class="py-3 border-0">Total</th>
+                  <th class="pe-4 py-3 border-0">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php foreach ($recentOrders as $ro): ?>
+                  <tr>
+                    <td class="ps-4 py-3 fw-bold">#<?php echo (int)$ro['id']; ?></td>
+                    <td class="py-3 text-muted"><?php echo htmlspecialchars($ro['customer_name']); ?></td>
+                    <td class="py-3 fw-semibold">$<?php echo number_format((float)$ro['total'], 2); ?></td>
+                      <td class="pe-4 py-3"><span class="badge badge-chip <?php echo orderStatusBadgeClass((string)$ro['status']); ?>"><?php echo htmlspecialchars($ro['status']); ?></span></td>
+                  </tr>
+                <?php endforeach; ?>
+                <?php if (empty($recentOrders)): ?>
+                  <tr><td colspan="4" class="text-center py-4 text-muted">No orders yet.</td></tr>
+                <?php endif; ?>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="card border-0 shadow-sm rounded-4 bg-white h-100">
+          <div class="card-header bg-white border-bottom border-light pt-4 pb-3 px-4">
+            <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-star text-warning me-2"></i> Top Customers</h5>
+          </div>
+          <div class="card-body p-0">
+            <ul class="list-group list-group-flush">
+              <?php foreach ($topCustomers as $tc): ?>
+                <li class="list-group-item d-flex justify-content-between align-items-center px-4 py-3">
+                  <div>
+                    <div class="fw-semibold text-dark"><?php echo htmlspecialchars($tc['name']); ?></div>
+                    <small class="text-muted"><?php echo (int)$tc['order_count']; ?> orders</small>
+                  </div>
+                  <div class="fw-bold text-success">$<?php echo number_format((float)$tc['lifetime_value'], 2); ?></div>
+                </li>
+              <?php endforeach; ?>
+              <?php if (empty($topCustomers)): ?>
+                <li class="list-group-item text-center text-muted py-4">No customer data yet.</li>
+              <?php endif; ?>
+            </ul>
           </div>
         </div>
       </div>
@@ -283,14 +424,14 @@ require_once __DIR__ . '/includes/header.php';
                                       <?php endif; ?>
                                     </td>
                                     <td class="py-3">
-                                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 fw-bold"><?php echo $p['total_sold']; ?> Kgs</span>
+                                        <span class="badge badge-chip badge-chip-primary"><?php echo $p['total_sold']; ?> Kgs</span>
                                     </td>
                                     <td class="py-3 text-success fw-bold">
                                         $<?php echo number_format($p['effective_price'] * $p['total_sold'], 2); ?>
                                     </td>
                                     <td class="pe-4 py-3">
                                       <?php if ($p['stock'] <= $p['stock_limit']): ?>
-                                        <span class="badge bg-danger rounded-pill px-3"><?php echo $p['stock']; ?> Low</span>
+                                        <span class="badge badge-chip badge-chip-danger"><?php echo $p['stock']; ?> Low</span>
                                         <?php else: ?>
                                             <span class="text-muted fw-semibold"><?php echo $p['stock']; ?> available</span>
                                         <?php endif; ?>

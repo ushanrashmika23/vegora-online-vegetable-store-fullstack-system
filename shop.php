@@ -124,22 +124,27 @@ function buildShopUrl(array $overrides = [])
       <!-- Sidebar Filters -->
       <aside class="col-lg-3">
         <div class="filter-card">
+          <h4 class="filter-title">Search</h4>
+          <div class="px-2 mb-4">
+            <input type="text" id="shopFilterSearch" class="form-control" placeholder="Type product name..." value="<?php echo htmlspecialchars($searchQuery); ?>">
+          </div>
+
           <h4 class="filter-title">Categories</h4>
-          <div class="list-group list-group-flush mb-4">
-            <a href="<?php echo htmlspecialchars(buildShopUrl(['category' => ''])); ?>" class="list-group-item list-group-item-action <?php echo $selectedCategory === '' ? 'active' : ''; ?> d-flex justify-content-between align-items-center">
+          <div class="list-group list-group-flush mb-4" id="shopCategoryList">
+            <a href="<?php echo htmlspecialchars(buildShopUrl(['category' => ''])); ?>" class="list-group-item list-group-item-action <?php echo $selectedCategory === '' ? 'active' : ''; ?> d-flex justify-content-between align-items-center js-category-link" data-category="">
               All Fresh
-              <span class="badge bg-success rounded-pill"><?php echo count($products); ?></span>
+              <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 fw-bold"><?php echo count($products); ?></span>
             </a>
             <?php foreach ($categoryCounts as $categoryName => $count): ?>
-              <a href="<?php echo htmlspecialchars(buildShopUrl(['category' => $categoryName])); ?>" class="list-group-item list-group-item-action <?php echo strcasecmp($selectedCategory, $categoryName) === 0 ? 'active' : ''; ?> d-flex justify-content-between align-items-center">
+              <a href="<?php echo htmlspecialchars(buildShopUrl(['category' => $categoryName])); ?>" class="list-group-item list-group-item-action <?php echo strcasecmp($selectedCategory, $categoryName) === 0 ? 'active' : ''; ?> d-flex justify-content-between align-items-center js-category-link" data-category="<?php echo htmlspecialchars(strtolower($categoryName)); ?>">
                 <?php echo htmlspecialchars($categoryName); ?>
-                <span class="badge bg-light text-dark rounded-pill"><?php echo (int)$count; ?></span>
+                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 fw-bold"><?php echo (int)$count; ?></span>
               </a>
             <?php endforeach; ?>
           </div>
 
           <h4 class="filter-title mt-2">Filter by Price</h4>
-          <form method="GET" action="shop.php" class="px-2">
+          <form method="GET" action="shop.php" class="px-2" id="shopPriceForm">
             <input type="hidden" name="category" value="<?php echo htmlspecialchars($selectedCategory); ?>">
             <input type="hidden" name="sort" value="<?php echo htmlspecialchars($selectedSort); ?>">
             <input type="hidden" name="q" value="<?php echo htmlspecialchars($searchQuery); ?>">
@@ -148,7 +153,7 @@ function buildShopUrl(array $overrides = [])
               <span>$0</span>
               <span id="priceValue">$<?php echo (int)$selectedMaxPrice; ?></span>
             </div>
-            <button type="submit" class="btn btn-outline-primary w-100 mt-3 rounded-pill">Apply Filter</button>
+            <button type="button" id="shopFilterReset" class="btn btn-outline-primary w-100 mt-3 rounded-pill">Reset Filters</button>
           </form>
         </div>
       </aside>
@@ -168,7 +173,7 @@ function buildShopUrl(array $overrides = [])
               <input type="hidden" name="category" value="<?php echo htmlspecialchars($selectedCategory); ?>">
               <input type="hidden" name="max_price" value="<?php echo (int)$selectedMaxPrice; ?>">
               <input type="hidden" name="q" value="<?php echo htmlspecialchars($searchQuery); ?>">
-              <select name="sort" class="form-select border-0 shadow-sm rounded-pill fw-semibold bg-white" style="cursor: pointer;" onchange="document.getElementById('sortForm').submit();">
+              <select id="shopSortSelect" name="sort" class="form-select border-0 shadow-sm rounded-pill fw-semibold bg-white" style="cursor: pointer;">
                 <option value="default" <?php echo $selectedSort === 'default' ? 'selected' : ''; ?>>Default Sorting</option>
                 <option value="price_asc" <?php echo $selectedSort === 'price_asc' ? 'selected' : ''; ?>>Price: Low to High</option>
                 <option value="price_desc" <?php echo $selectedSort === 'price_desc' ? 'selected' : ''; ?>>Price: High to Low</option>
@@ -187,7 +192,13 @@ function buildShopUrl(array $overrides = [])
             </div>
           <?php else: ?>
             <?php foreach ($filteredProducts as $product): ?>
-              <div class="col-xl-4 col-md-6">
+              <?php
+                $effectivePrice = (!empty($product['discounted_price']) && $product['discounted_price'] > 0 && $product['discounted_price'] < $product['price'])
+                  ? (float)$product['discounted_price']
+                  : (float)$product['price'];
+                $categorySlug = strtolower(trim((string)($product['category'] ?? 'uncategorized')));
+              ?>
+              <div class="col-xl-4 col-md-6" data-product-item data-name="<?php echo htmlspecialchars(strtolower((string)$product['name'])); ?>" data-category="<?php echo htmlspecialchars($categorySlug); ?>" data-price="<?php echo htmlspecialchars((string)$effectivePrice); ?>" data-created="<?php echo htmlspecialchars((string)strtotime((string)($product['created_at'] ?? 'now'))); ?>">
                 <div class="card product-card h-100">
                   <!-- Wrapped content inside anchor -->
                   <a href="product.php?id=<?php echo $product['id']; ?>" class="text-decoration-none text-dark d-flex flex-column h-100">
@@ -250,10 +261,93 @@ function buildShopUrl(array $overrides = [])
     (function () {
       const range = document.getElementById('priceRange');
       const value = document.getElementById('priceValue');
-      if (!range || !value) return;
+      const searchInput = document.getElementById('shopFilterSearch');
+      const sortSelect = document.getElementById('shopSortSelect');
+      const categoryLinks = Array.from(document.querySelectorAll('.js-category-link'));
+      const productGrid = document.querySelector('.row.g-4');
+      const productCards = Array.from(document.querySelectorAll('[data-product-item]'));
+      const resultText = document.querySelector('.border-bottom p.mb-0.text-muted');
+      let selectedCategory = '<?php echo htmlspecialchars(strtolower($selectedCategory)); ?>';
+
+      if (!range || !value || !productGrid || productCards.length === 0) return;
+
+      function sortCards(cards, mode) {
+        const sorted = cards.slice();
+        if (mode === 'price_asc') {
+          sorted.sort((a, b) => Number(a.dataset.price) - Number(b.dataset.price));
+        } else if (mode === 'price_desc') {
+          sorted.sort((a, b) => Number(b.dataset.price) - Number(a.dataset.price));
+        } else if (mode === 'latest') {
+          sorted.sort((a, b) => Number(b.dataset.created) - Number(a.dataset.created));
+        }
+        sorted.forEach((card) => productGrid.appendChild(card));
+      }
+
+      function applyShopFilters() {
+        const query = (searchInput?.value || '').toLowerCase().trim();
+        const maxPrice = Number(range.value || 0);
+        const sortMode = sortSelect?.value || 'default';
+        let visible = 0;
+
+        productCards.forEach((card) => {
+          const name = card.dataset.name || '';
+          const category = card.dataset.category || '';
+          const price = Number(card.dataset.price || 0);
+
+          const matchesQuery = query === '' || name.includes(query) || category.includes(query);
+          const matchesCategory = selectedCategory === '' || category === selectedCategory;
+          const matchesPrice = price <= maxPrice;
+          const matches = matchesQuery && matchesCategory && matchesPrice;
+
+          card.style.display = matches ? '' : 'none';
+          if (matches) visible++;
+        });
+
+        sortCards(productCards, sortMode);
+
+        if (resultText) {
+          resultText.innerHTML = 'Showing <strong>' + visible + '</strong> of <?php echo count($products); ?> results';
+        }
+      }
+
       range.addEventListener('input', function () {
         value.textContent = '$' + range.value;
+        applyShopFilters();
       });
+
+      if (searchInput) {
+        searchInput.addEventListener('input', applyShopFilters);
+      }
+
+      if (sortSelect) {
+        sortSelect.addEventListener('change', applyShopFilters);
+      }
+
+      categoryLinks.forEach((link) => {
+        link.addEventListener('click', function (event) {
+          event.preventDefault();
+          selectedCategory = (link.dataset.category || '').toLowerCase();
+          categoryLinks.forEach((l) => l.classList.remove('active'));
+          link.classList.add('active');
+          applyShopFilters();
+        });
+      });
+
+      const resetBtn = document.getElementById('shopFilterReset');
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+          if (searchInput) searchInput.value = '';
+          selectedCategory = '';
+          range.value = 200;
+          value.textContent = '$200';
+          if (sortSelect) sortSelect.value = 'default';
+          categoryLinks.forEach((l) => l.classList.remove('active'));
+          if (categoryLinks[0]) categoryLinks[0].classList.add('active');
+          applyShopFilters();
+        });
+      }
+
+      applyShopFilters();
     })();
   </script>
   <script src="assets/js/cart.js"></script>

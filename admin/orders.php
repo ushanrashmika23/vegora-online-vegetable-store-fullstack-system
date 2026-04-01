@@ -6,6 +6,34 @@ require_once __DIR__ . '/../models/Order.php';
 $orderModel = new Order($pdo);
 $orders = $orderModel->getAllOrders();
 
+$statusFilter = trim((string)($_GET['status'] ?? 'all'));
+$search = trim((string)($_GET['q'] ?? ''));
+
+$orders = array_values(array_filter($orders, function ($o) use ($statusFilter, $search) {
+  $matchesStatus = $statusFilter === 'all' || strcasecmp((string)$o['status'], $statusFilter) === 0;
+  $haystack = strtolower((string)($o['id'] . ' ' . ($o['user_name'] ?? '') . ' ' . ($o['user_email'] ?? '')));
+  $matchesSearch = $search === '' || strpos($haystack, strtolower($search)) !== false;
+  return $matchesStatus && $matchesSearch;
+}));
+
+$statusSummary = ['Placed' => 0, 'Packed' => 0, 'Shipped' => 0, 'Delivered' => 0, 'Cancelled' => 0];
+foreach ($orders as $o) {
+  if (isset($statusSummary[$o['status']])) {
+    $statusSummary[$o['status']]++;
+  }
+}
+
+function statusSummaryBadgeClass(string $status): string {
+  return match ($status) {
+    'Placed' => 'badge-chip-primary',
+    'Packed' => 'badge-chip-info',
+    'Shipped' => 'badge-chip-warning',
+    'Delivered' => 'badge-chip-success',
+    'Cancelled' => 'badge-chip-danger',
+    default => 'badge-chip-neutral'
+  };
+}
+
 // Pre-fetch items for each order so we can display them in modals cleanly
 $orderItemsInfo = [];
 foreach ($orders as $o) {
@@ -33,6 +61,37 @@ require_once __DIR__ . '/includes/header.php';
       </div>
     <?php endif; ?>
 
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+      <form method="GET" class="row g-3 align-items-end admin-filter-grid">
+        <div class="col-lg-5 col-md-6">
+          <label class="form-label fw-bold">Search</label>
+          <input type="text" id="ordersFilterSearch" name="q" class="form-control admin-filter-control bg-light border-0" value="<?php echo htmlspecialchars($search); ?>" placeholder="Type order ID, customer name or email">
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <label class="form-label fw-bold">Status</label>
+          <select id="ordersFilterStatus" name="status" class="form-select admin-filter-control bg-light border-0">
+            <option value="all" <?php echo $statusFilter === 'all' ? 'selected' : ''; ?>>All</option>
+            <option value="Placed" <?php echo $statusFilter === 'Placed' ? 'selected' : ''; ?>>Placed</option>
+            <option value="Packed" <?php echo $statusFilter === 'Packed' ? 'selected' : ''; ?>>Packed</option>
+            <option value="Shipped" <?php echo $statusFilter === 'Shipped' ? 'selected' : ''; ?>>Shipped</option>
+            <option value="Delivered" <?php echo $statusFilter === 'Delivered' ? 'selected' : ''; ?>>Delivered</option>
+            <option value="Cancelled" <?php echo $statusFilter === 'Cancelled' ? 'selected' : ''; ?>>Cancelled</option>
+          </select>
+        </div>
+        <div class="col-lg-4 col-md-12 admin-filter-actions">
+          <button type="button" class="btn btn-primary admin-filter-btn rounded-pill px-4" id="ordersFilterApply">Apply</button>
+          <a href="orders.php" class="btn btn-light border admin-filter-btn rounded-pill px-4">Reset</a>
+        </div>
+      </form>
+      <!-- <div class="small text-muted mt-3">Filters update table live while typing or changing status.</div> -->
+      <div class="d-flex flex-wrap gap-2 mt-3">
+        <?php foreach ($statusSummary as $st => $cnt): ?>
+          <span class="badge badge-chip <?php echo statusSummaryBadgeClass($st); ?>" data-status-summary="<?php echo htmlspecialchars($st); ?>"><?php echo $st; ?>: <?php echo (int)$cnt; ?></span>
+        <?php endforeach; ?>
+        <span class="badge badge-chip badge-chip-neutral" id="ordersVisibleCount">Showing: <?php echo count($orders); ?></span>
+      </div>
+    </div>
+
     <?php if (isset($_SESSION['admin_error'])): ?>
       <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0" role="alert">
         <i class="fa-solid fa-triangle-exclamation me-2"></i> <?php echo $_SESSION['admin_error']; unset($_SESSION['admin_error']); ?>
@@ -55,7 +114,7 @@ require_once __DIR__ . '/includes/header.php';
           </thead>
           <tbody>
             <?php foreach ($orders as $o): ?>
-            <tr>
+            <tr data-order-id="<?php echo (int)$o['id']; ?>" data-customer="<?php echo htmlspecialchars(strtolower((string)$o['user_name'])); ?>" data-email="<?php echo htmlspecialchars(strtolower((string)$o['user_email'])); ?>" data-status="<?php echo htmlspecialchars(strtolower((string)$o['status'])); ?>">
               <td><span class="fw-bold text-dark">#<?php echo $o['id']; ?></span></td>
               <td>
                 <div class="fw-bold text-dark"><?php echo htmlspecialchars($o['user_name']); ?></div>
@@ -148,5 +207,61 @@ require_once __DIR__ . '/includes/header.php';
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    (function () {
+      const searchInput = document.getElementById('ordersFilterSearch');
+      const statusSelect = document.getElementById('ordersFilterStatus');
+      const visibleCount = document.getElementById('ordersVisibleCount');
+      const rows = Array.from(document.querySelectorAll('tbody tr[data-order-id]'));
+      const summaryBadges = Array.from(document.querySelectorAll('[data-status-summary]'));
+
+      function applyOrderFilters() {
+        const query = (searchInput?.value || '').toLowerCase().trim();
+        const status = (statusSelect?.value || 'all').toLowerCase();
+        let shown = 0;
+        const counts = { placed: 0, packed: 0, shipped: 0, delivered: 0, cancelled: 0 };
+
+        rows.forEach((row) => {
+          const id = String(row.dataset.orderId || '');
+          const customer = row.dataset.customer || '';
+          const email = row.dataset.email || '';
+          const rowStatus = row.dataset.status || '';
+
+          const matchesSearch = query === '' || id.includes(query) || customer.includes(query) || email.includes(query);
+          const matchesStatus = status === 'all' || rowStatus === status;
+          const matches = matchesSearch && matchesStatus;
+
+          row.style.display = matches ? '' : 'none';
+          if (matches) {
+            shown++;
+            if (counts[rowStatus] !== undefined) {
+              counts[rowStatus]++;
+            }
+          }
+        });
+
+        if (visibleCount) {
+          visibleCount.textContent = 'Showing: ' + shown;
+        }
+
+        summaryBadges.forEach((badge) => {
+          const statusKey = (badge.dataset.statusSummary || '').toLowerCase();
+          const label = badge.dataset.statusSummary || '';
+          const value = counts[statusKey] ?? 0;
+          badge.textContent = label + ': ' + value;
+        });
+      }
+
+      if (searchInput) searchInput.addEventListener('input', applyOrderFilters);
+      if (statusSelect) statusSelect.addEventListener('change', applyOrderFilters);
+
+      const applyBtn = document.getElementById('ordersFilterApply');
+      if (applyBtn) {
+        applyBtn.addEventListener('click', applyOrderFilters);
+      }
+
+      applyOrderFilters();
+    })();
+  </script>
 </body>
 </html>

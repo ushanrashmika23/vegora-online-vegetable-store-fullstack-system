@@ -154,5 +154,14 @@ class Product {
         $stmt = $this->pdo->prepare("DELETE FROM products WHERE id = :id");
         return $stmt->execute(['id' => $id]);
     }
+
+    // Increase stock by a positive quantity.
+    public function increaseStock($id, $amount) {
+        $stmt = $this->pdo->prepare("UPDATE products SET stock = stock + :amount WHERE id = :id");
+        return $stmt->execute([
+            'id' => (int)$id,
+            'amount' => (int)$amount
+        ]);
+    }
 }
 ?>

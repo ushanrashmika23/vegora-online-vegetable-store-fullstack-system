@@ -62,6 +62,93 @@ require_once __DIR__ . '/auth.php';
     .custom-status-bg-Shipped { background-color: #bfdbfe; color: #1e40af; }
     .custom-status-bg-Delivered { background-color: #bbf7d0; color: #166534; }
     .custom-status-bg-Cancelled { background-color: #fecaca; color: #991b1b; }
+
+    /* Keep form labels and hints readable on all admin cards */
+    .main-content .form-label,
+    .main-content label {
+      color: #1f2937 !important;
+      font-weight: 700;
+    }
+    .main-content .form-label.text-muted,
+    .main-content label.text-muted {
+      color: #374151 !important;
+      opacity: 1 !important;
+    }
+    .main-content .form-text {
+      color: #4b5563 !important;
+    }
+
+    /* Unified admin badge style */
+    .badge-chip {
+      border-radius: 999px;
+      padding: 0.45rem 0.85rem;
+      font-weight: 700;
+      border: 0;
+      line-height: 1;
+    }
+    .badge-chip-sm {
+      border-radius: 999px;
+      padding: 0.25rem 0.6rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border: 0;
+      line-height: 1;
+    }
+    .badge-chip-neutral { background: #f8fafc; color: #1f2937; }
+    .badge-chip-primary { background: rgba(59,130,246,0.12); color: #1d4ed8; }
+    .badge-chip-success { background: rgba(16,185,129,0.12); color: #047857; }
+    .badge-chip-info { background: rgba(6,182,212,0.12); color: #0e7490; }
+    .badge-chip-warning { background: rgba(245,158,11,0.12); color: #b45309; }
+    .badge-chip-danger { background: rgba(239,68,68,0.12); color: #b91c1c; }
+    .badge-chip-dark { background: #111827; color: #f9fafb; }
+
+    /* Remove legacy borders from any badge markup still using border utility classes */
+    .main-content .badge {
+      border: 0 !important;
+    }
+
+    /* Consistent filter toolbar layout across admin pages */
+    .admin-filter-grid .form-label {
+      margin-bottom: 0.45rem;
+    }
+    .admin-filter-actions {
+      display: flex;
+      align-items: end;
+      gap: 0.5rem;
+      height: 100%;
+    }
+    .admin-filter-control {
+      min-height: 44px;
+      height: 44px;
+      padding-top: 0.55rem;
+      padding-bottom: 0.55rem;
+      font-size: 0.95rem;
+    }
+    .admin-filter-grid .input-group .input-group-text.admin-filter-control {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 44px;
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+    }
+    .admin-filter-btn {
+      min-height: 44px;
+      height: 44px;
+      min-width: 120px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+    @media (max-width: 991.98px) {
+      .admin-filter-actions .admin-filter-btn {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+    }
   </style>
 </head>
 <body>
