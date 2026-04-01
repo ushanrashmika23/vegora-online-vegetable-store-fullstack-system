@@ -1,0 +1,70 @@
+%PDF-1.4
+1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj
+2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj
+3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj
+4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj
+5 0 obj << /Length 725 >> stream
+BT
+/F1 11 Tf
+50 790 Td
+(Vegora - INVOICE) Tj
+0 -15 Td
+(Invoice #: INV-000023) Tj
+0 -15 Td
+(Order #: 23) Tj
+0 -15 Td
+(Date: Apr 01, 2026 12:33 PM) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Bill To:) Tj
+0 -15 Td
+(Ushan Rashmika) Tj
+0 -15 Td
+(ushanrashmika23@gmail.com) Tj
+0 -15 Td
+(New York) Tj
+0 -15 Td
+(New York 10001) Tj
+0 -15 Td
+(Phone: 21346789) Tj
+0 -15 Td
+(Note: 123) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Items:) Tj
+0 -15 Td
+(- Fresh Tomatoes x2 @ $2.55 = $5.10) Tj
+0 -15 Td
+(- Organic Carrots x2 @ $2.15 = $4.30) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Subtotal: $9.40) Tj
+0 -15 Td
+(Discount: -$0.00) Tj
+0 -15 Td
+(Shipping: $5.00) Tj
+0 -15 Td
+(Tax: $0.94) Tj
+0 -15 Td
+(TOTAL: $15.34) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Thank you for shopping with Vegora.) Tj
+ET
+endstream endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000311 00000 n 
+trailer << /Size 6 /Root 1 0 R >>
+startxref
+1087
+%%EOF
