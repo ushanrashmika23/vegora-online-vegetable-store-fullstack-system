@@ -3,17 +3,17 @@
 2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj
 3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj
 4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj
-5 0 obj << /Length 668 >> stream
+5 0 obj << /Length 672 >> stream
 BT
 /F1 11 Tf
 50 790 Td
 (Vegora - INVOICE) Tj
 0 -15 Td
-(Invoice #: INV-000013) Tj
+(Invoice #: INV-000019) Tj
 0 -15 Td
-(Order #: 13) Tj
+(Order #: 19) Tj
 0 -15 Td
-(Date: Mar 31, 2026 07:49 PM) Tj
+(Date: Apr 01, 2026 08:32 AM) Tj
 0 -15 Td
 () Tj
 0 -15 Td
@@ -23,31 +23,31 @@ BT
 0 -15 Td
 (ushanrashmika23@gmail.com) Tj
 0 -15 Td
-(23123) Tj
+(New York) Tj
 0 -15 Td
-(3213 23123) Tj
+(New York 10001) Tj
 0 -15 Td
-(Phone: 2312312) Tj
+(Phone: 21346789) Tj
 0 -15 Td
-(Note: 31231) Tj
+(Note: 123) Tj
 0 -15 Td
 () Tj
 0 -15 Td
 (Items:) Tj
 0 -15 Td
-(- Bell Peppers x2 @ $5.99 = $11.98) Tj
+(- Bell Peppers x1 @ $5.99 = $5.99) Tj
 0 -15 Td
 () Tj
 0 -15 Td
-(Subtotal: $11.98) Tj
+(Subtotal: $5.99) Tj
 0 -15 Td
 (Discount: -$0.00) Tj
 0 -15 Td
 (Shipping: $5.00) Tj
 0 -15 Td
-(Tax: $1.20) Tj
+(Tax: $0.60) Tj
 0 -15 Td
-(TOTAL: $18.18) Tj
+(TOTAL: $11.59) Tj
 0 -15 Td
 () Tj
 0 -15 Td
@@ -64,5 +64,5 @@ xref
 0000000311 00000 n 
 trailer << /Size 6 /Root 1 0 R >>
 startxref
-1030
+1034
 %%EOF

@@ -37,7 +37,7 @@ $featuredProducts = array_slice($products, 0, 4);
         <p>Get farm-fresh, pesticide-free vegetables delivered straight to your doorstep within hours.</p>
         <div class="d-flex gap-3 mt-4">
           <a href="shop.php" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm">Shop Now <i class="fa-solid fa-arrow-right ms-2"></i></a>
-          <a href="#" class="btn btn-outline-primary btn-lg rounded-pill px-4" style="background: white;">How it works</a>
+          <!-- <a href="#" class="btn btn-outline-primary btn-lg rounded-pill px-4" style="background: white;">How it works</a> -->
         </div>
       </div>
       <div class="col-lg-6 mt-5 mt-lg-0 text-center" style="background: transparent;">

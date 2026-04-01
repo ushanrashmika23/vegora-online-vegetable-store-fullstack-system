@@ -56,7 +56,36 @@ if (isset($_SESSION['user_id'])) {
       filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
     }
     .details-box {
-      padding: 2rem 0;
+      padding: 0.75rem 0 2rem;
+    }
+    .qty-control {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+    .qty-input {
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+    .qty-input::-webkit-outer-spin-button,
+    .qty-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .review-list {
+      max-height: 420px;
+      overflow: auto;
+      padding-right: 0.25rem;
+    }
+    @media (max-width: 991.98px) {
+      .product-img-box {
+        min-height: 320px;
+        padding: 2rem;
+      }
+      .details-box {
+        padding: 0;
+      }
     }
     .rating-stars {
       color: #f59e0b;
@@ -94,8 +123,8 @@ if (isset($_SESSION['user_id'])) {
 
   <?php require_once 'includes/navbar.php'; ?>
 
-  <main class="container py-5 my-4">
-    <nav aria-label="breadcrumb" class="mb-4">
+  <main class="container py-4 py-md-5 my-2 my-md-4">
+    <nav aria-label="breadcrumb" class="mb-3">
       <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="index.php" class="text-success text-decoration-none">Home</a></li>
         <li class="breadcrumb-item"><a href="shop.php" class="text-success text-decoration-none">Shop</a></li>
@@ -103,7 +132,48 @@ if (isset($_SESSION['user_id'])) {
       </ol>
     </nav>
 
-    <div class="row g-5 align-items-center bg-white p-4 p-md-5 rounded-4 shadow-sm border border-light">
+    <section class="mb-4">
+      <div class="d-flex flex-wrap gap-2 mb-2">
+        <span class="badge rounded-pill bg-success-subtle text-success px-3 py-2">#<?php echo htmlspecialchars($product['category']); ?></span>
+        <span class="badge rounded-pill bg-light text-dark border px-3 py-2">Farm Fresh</span>
+        <span class="badge rounded-pill bg-light text-dark border px-3 py-2">Same Day Delivery</span>
+      </div>
+
+      <div class="bg-success text-white rounded-4 p-3 p-md-4 shadow-sm mb-3">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+          <div>
+            <div class="fw-bold fs-5">Limited Time Freshness Offer</div>
+            <div class="small opacity-75">Buy 2kg or more and get free priority packing on this product.</div>
+          </div>
+          <a href="checkout.php" class="btn btn-light btn-sm rounded-pill px-3 fw-bold">Shop Offer</a>
+        </div>
+      </div>
+
+      <div class="bg-white border border-light rounded-4 shadow-sm p-3 p-md-4">
+        <div class="row g-3 text-center text-md-start">
+          <div class="col-md-4">
+            <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-2">
+              <i class="fa-solid fa-truck-fast text-success"></i>
+              <span class="small fw-semibold text-muted">Fast Delivery Window</span>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-2">
+              <i class="fa-solid fa-seedling text-success"></i>
+              <span class="small fw-semibold text-muted">Freshly Harvested</span>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-2">
+              <i class="fa-solid fa-shield-heart text-success"></i>
+              <span class="small fw-semibold text-muted">Quality Assured</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="row g-4 g-lg-5 align-items-start bg-white p-3 p-md-4 p-lg-5 rounded-4 shadow-sm border border-light">
       
       <!-- Product Image -->
       <div class="col-lg-6">
@@ -115,10 +185,10 @@ if (isset($_SESSION['user_id'])) {
 
       <!-- Product Details -->
       <div class="col-lg-6 details-box">
-        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 fw-bold mb-3"><?php echo htmlspecialchars($product['category']); ?></span>
-        <h1 class="display-4 fw-bold text-dark mb-3"><?php echo htmlspecialchars($product['name']); ?></h1>
+        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 fw-bold mb-2"><?php echo htmlspecialchars($product['category']); ?></span>
+        <h1 class="display-5 fw-bold text-dark mb-2"><?php echo htmlspecialchars($product['name']); ?></h1>
 
-        <div class="d-flex align-items-center gap-2 mb-3">
+        <div class="d-flex align-items-center gap-2 mb-2">
           <span class="rating-stars">
             <?php
               $avgRatingRounded = (int)round($ratingSummary['average_rating']);
@@ -136,7 +206,7 @@ if (isset($_SESSION['user_id'])) {
           <span class="text-muted fw-semibold"><?php echo number_format($ratingSummary['average_rating'], 1); ?> (<?php echo (int)$ratingSummary['review_count']; ?> reviews)</span>
         </div>
         
-        <div class="fs-2 fw-bold text-success mb-4">
+        <div class="fs-2 fw-bold text-success mb-3">
           <?php if (!empty($product['discounted_price']) && $product['discounted_price'] > 0 && $product['discounted_price'] < $product['price']): ?>
             <span class="text-decoration-line-through text-secondary fs-4 me-2">$<?php echo number_format($product['price'], 2); ?></span>
             <span>$<?php echo number_format($product['discounted_price'], 2); ?></span>
@@ -146,23 +216,23 @@ if (isset($_SESSION['user_id'])) {
           <span class="fs-5 text-muted fw-normal">/ kg</span>
         </div>
         
-        <p class="text-muted fs-5 mb-5" style="line-height: 1.8;">
+        <p class="text-muted fs-5 mb-4" style="line-height: 1.7;">
           <?php echo nl2br(htmlspecialchars($product['description'] ?? 'No description available for this delicious, farm-fresh product! Enjoy the highest quality organically sourced vegetables right at your doorstep.')); ?>
         </p>
 
-        <div class="d-flex align-items-center gap-3">
+        <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-3">
           <div class="qty-control px-2 py-1 bg-light rounded-pill border" style="width: 140px;">
             <button class="qty-btn bg-white shadow-sm rounded-circle d-flex align-items-center justify-content-center border-0 text-dark" style="width:35px; height:35px;" onclick="document.getElementById('buy_qty').stepDown()"><i class="fa-solid fa-minus fs-6"></i></button>
             <input type="number" id="buy_qty" class="qty-input bg-transparent border-0 text-center fw-bold fs-5" style="width: 50px;" value="1" min="1">
             <button class="qty-btn bg-white shadow-sm rounded-circle d-flex align-items-center justify-content-center border-0 text-dark" style="width:35px; height:35px;" onclick="document.getElementById('buy_qty').stepUp()"><i class="fa-solid fa-plus fs-6"></i></button>
           </div>
           
-          <button class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm d-flex align-items-center gap-2 flex-grow-1 justify-content-center" onclick="addToCart(<?php echo $product['id']; ?>, document.getElementById('buy_qty').value)">
+          <button class="btn btn-primary btn-lg rounded-pill px-4 px-md-5 shadow-sm d-flex align-items-center gap-2 flex-grow-1 justify-content-center" onclick="addToCart(<?php echo $product['id']; ?>, document.getElementById('buy_qty').value)">
             <i class="fa-solid fa-cart-shopping"></i> Add to Cart
           </button>
         </div>
         
-        <hr class="my-5 text-muted opacity-25">
+        <hr class="my-4 text-muted opacity-25">
         
         <div class="d-flex flex-column gap-2 text-muted fw-semibold">
           <div><i class="fa-solid fa-truck-fast text-success me-2" style="width: 20px;"></i> Free delivery on orders over $50</div>
@@ -174,7 +244,7 @@ if (isset($_SESSION['user_id'])) {
 
     </div>
 
-    <section class="mt-5">
+    <section class="mt-4 mt-md-5">
       <div class="row g-4">
         <div class="col-lg-5">
           <div class="bg-white rounded-4 shadow-sm border border-light p-4 h-100">
@@ -238,7 +308,7 @@ if (isset($_SESSION['user_id'])) {
             <?php if (empty($reviews)): ?>
               <p class="text-muted mb-0">No reviews yet. Be the first to rate this product.</p>
             <?php else: ?>
-              <div class="d-flex flex-column gap-3" style="max-height: 420px; overflow: auto;">
+              <div class="d-flex flex-column gap-3 review-list">
                 <?php foreach ($reviews as $rev): ?>
                   <div class="border rounded-3 p-3 bg-light">
                     <div class="d-flex justify-content-between align-items-center mb-1">
@@ -265,7 +335,7 @@ if (isset($_SESSION['user_id'])) {
     </section>
 
     <?php if (!empty($mostSellingItems)): ?>
-      <section class="mt-5 pt-2">
+      <section class="mt-4 mt-md-5 pt-1">
         <div class="d-flex justify-content-between align-items-end mb-4">
           <div>
             <h3 class="mb-1">Most Selling Items</h3>

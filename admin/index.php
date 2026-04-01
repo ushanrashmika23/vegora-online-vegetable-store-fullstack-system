@@ -265,7 +265,8 @@ require_once __DIR__ . '/includes/header.php';
                                     <td class="ps-4 py-3">
                                         <div class="d-flex align-items-center gap-3">
                                             <div class="position-relative">
-                                                <img src="../<?php echo htmlspecialchars($p['image']); ?>" class="rounded-3 object-fit-cover shadow-sm" width="45" height="45">
+                                        <?php $topImg = str_starts_with($p['image'], 'http') ? $p['image'] : '../' . $p['image']; ?>
+                                        <img src="<?php echo htmlspecialchars($topImg); ?>" class="rounded-3 object-fit-cover shadow-sm" width="45" height="45" alt="<?php echo htmlspecialchars($p['name']); ?>">
                                                 <?php if($idx === 0): ?>
                                                   <span class="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-warning p-1 border border-2 border-white"><i class="fa-solid fa-trophy" style="font-size: 0.6rem;"></i></span>
                                                 <?php endif; ?>
